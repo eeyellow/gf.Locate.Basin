@@ -81,29 +81,17 @@
                 var row1 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
                 var lbl1 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': '主集水區' });
                 var sel = $('<select/>', { 'class': 'gfLocateBasin-Select' });
-                o._getOption();
+                o._getOption({}, "basin", "basin", sel);
                 row1.append(lbl1);
                 row1.append(sel);
 
-                var row2 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
-                var lbl2 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': 'X座標或E經度' });
-                var input2 = $('<input/>', { 'class': 'gfLocateBasin-Input gfLocateBasin-x', 'type': 'text', 'placeholder': '範例: 121.98' });
-                row2.append(lbl2);
-                row2.append(input2);
-
-                var row3 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
-                var lbl3 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': 'Y座標或N緯度' });
-                var input3 = $('<input/>', { 'class': 'gfLocateBasin-Input gfLocateBasin-y', 'type': 'text', 'placeholder': '範例:  21.98' });
-                row3.append(lbl3);
-                row3.append(input3);
 
                 var row4 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
                 var btn4 = $('<button/>', { 'class': 'gfLocateBasin-Button', 'text': '定位' });
                 row4.append(btn4);
 
                 o.target.append(row1);
-                o.target.append(row2);
-                o.target.append(row3);
+
                 o.target.append(row4);
 
                 sel.select2();
@@ -117,7 +105,7 @@
                     });
             },
 
-            _getOption: function(_data){
+            _getOption: function(_data, _valueField, _textField, _container){
                 var o = this;
                 $.ajax({
                     url: o.opt.url,
@@ -125,7 +113,10 @@
                     data: _data,
                     dataType: 'JSON',
                     success: function(res){
-                        debugger;
+                        res.forEach(function(data){
+                            var option = $('<option/>', { value: data[_valueField], text: data[_textField] });
+                            _container.append(option);
+                        });
                     }
                 })
             },
