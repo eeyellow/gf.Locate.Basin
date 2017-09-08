@@ -80,29 +80,61 @@
 
                 var row1 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
                 var lbl1 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': '主集水區' });
-                var sel = $('<select/>', { 'class': 'gfLocateBasin-Select' });
-                o._getOption({}, "basin", "basin", sel);
+                var sel1 = $('<select/>', { 'class': 'gfLocateBasin-Select gfLocateBasin-Select1' });
+                o._getOption({}, "basin", "basin", sel1);
                 row1.append(lbl1);
-                row1.append(sel);
+                row1.append(sel1);
 
+                var row2 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
+                var lbl2 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': '次集水區' });
+                var sel2 = $('<select/>', { 'class': 'gfLocateBasin-Select gfLocateBasin-Select2' });
+                row2.append(lbl2);
+                row2.append(sel2);
+
+                var row3 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
+                var lbl3 = $('<label/>', { 'class': 'gfLocateBasin-Label', 'text': '子集水區' });
+                var sel3 = $('<select/>', { 'class': 'gfLocateBasin-Select gfLocateBasin-Select3' });
+                row3.append(lbl3);
+                row3.append(sel3);
 
                 var row4 = $('<div/>', { 'class': 'gfLocateBasin-Row' });
                 var btn4 = $('<button/>', { 'class': 'gfLocateBasin-Button', 'text': '定位' });
                 row4.append(btn4);
 
                 o.target.append(row1);
-
+                o.target.append(row2);
+                o.target.append(row3);
                 o.target.append(row4);
 
-                sel.select2();
+                sel1.select2();
+                sel2.select2();
+                sel3.select2();
             },
             _event: function () {
                 var o = this;
                 o.target
+                    .find('.gfLocateBasin-Select1')
+                        .change(function(e){
+                            o.target.find('.gfLocateBasin-Select2').empty();
+                            o.target.find('.gfLocateBasin-Select3').empty();
+                            o._getOption({ basin: o.target.find('.gfLocateBasin-Select1').val() }, "basinname", "basinname", o.target.find('.gfLocateBasin-Select2'));
+                        })
+                        .end()
+                    .find('.gfLocateBasin-Select2')
+                        .change(function(e){
+                            o.target.find('.gfLocateBasin-Select3').empty();
+                            o._getOption({ basin: o.target.find('.gfLocateBasin-Select1').val(), basinname: o.target.find('.gfLocateBasin-Select2').val() }, "subbasinna", "subbasinna", o.target.find('.gfLocateBasin-Select3'));
+                        })
+                        .end()
                     .find('.gfLocateBasin-Button')
-                    .click(function(e){
-
-                    });
+                        .click(function(e){
+                            o._getLatLng({
+                                basin: o.target.find('.gfLocateBasin-Select1').val(),
+                                basinname: o.target.find('.gfLocateBasin-Select2').val(),
+                                subbasinna: o.target.find('.gfLocateBasin-Select3').val()
+                            });
+                        })
+                        .end()
             },
 
             _getOption: function(_data, _valueField, _textField, _container){
@@ -113,9 +145,33 @@
                     data: _data,
                     dataType: 'JSON',
                     success: function(res){
+                        var defaultOption = $('<option/>', { value: "請選擇", text: "請選擇" });
+                        _container.append(defaultOption);
+
                         res.forEach(function(data){
                             var option = $('<option/>', { value: data[_valueField], text: data[_textField] });
                             _container.append(option);
+                        });
+                        _container.select2();
+                    }
+                })
+            },
+            _getLatLng: function(_data){
+                var o = this;
+                $.ajax({
+                    url: o.opt.url,
+                    type: 'POST',
+                    data: _data,
+                    dataType: 'JSON',
+                    success: function(res){
+                        o.target.trigger("onClick", {
+                            x: res[0]["x_84"] * 1,
+                            y: res[0]["y_84"] * 1,
+                            content:
+                                o.target.find('.gfLocateBasin-Select1 option:selected').text() + " > " +
+                                o.target.find('.gfLocateBasin-Select2 option:selected').text() + " > " +
+                                o.target.find('.gfLocateBasin-Select3 option:selected').text() + "<br />" +
+                                "( " + res[0]['x_84'] + " , " + res[0]['y_84'] + " )"
                         });
                     }
                 })
